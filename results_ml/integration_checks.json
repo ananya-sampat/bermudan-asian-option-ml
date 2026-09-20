@@ -1,0 +1,8 @@
+{
+  "stock_average": 3.9233687591334885,
+  "average_only": 3.331218246291913,
+  "vanilla_quadratic": 6.097769827039831,
+  "asian_hold": 3.3311492845630353,
+  "pathwise_parity": "passed",
+  "original_baselines": "passed"
+}

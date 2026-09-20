@@ -1,0 +1,8 @@
+{
+  "running_average": "passed",
+  "analytic_gradient": "passed",
+  "gd_vs_closed_form": "passed",
+  "hold_only": "passed",
+  "first_exercise": "passed",
+  "post_exercise_invariance": "passed"
+}

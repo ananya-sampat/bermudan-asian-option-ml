@@ -1,0 +1,26 @@
+{
+  "contract": {
+    "spot": 100.0,
+    "strike": 100.0,
+    "rate": 0.05,
+    "volatility": 0.2,
+    "maturity": 1.0,
+    "steps": 50,
+    "kind": "asian"
+  },
+  "teacher_paths": 20000,
+  "train_paths": 20000,
+  "validation_paths": 50000,
+  "test_paths": 50000,
+  "training_seeds": [
+    42,
+    43,
+    44
+  ],
+  "teacher_seed": 1001,
+  "validation_seed": 456,
+  "fixed_test_seed": 19001,
+  "policy_test_seed": 19002,
+  "decision_step": 25,
+  "notes": "Integrated with uploaded simulation.py, asian_lsm.py, asians_payoff.py and ridge_lsm.py. No antithetic sampling. All exercise at future observation dates only."
+}

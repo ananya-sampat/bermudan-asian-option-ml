@@ -1,0 +1,43 @@
+{
+  "quadratic": {
+    "name": "quadratic",
+    "spec": {
+      "kind": "quadratic"
+    }
+  },
+  "ridge": {
+    "name": "ridge_d3_a1.0",
+    "spec": {
+      "kind": "ridge",
+      "degree": 3,
+      "alpha": 1.0
+    }
+  },
+  "forest": {
+    "name": "forest_d8",
+    "spec": {
+      "kind": "forest",
+      "depth": 8,
+      "leaf": 40
+    }
+  },
+  "boost": {
+    "name": "boost_l7",
+    "spec": {
+      "kind": "boost",
+      "leaves": 7,
+      "iterations": 60
+    }
+  },
+  "neural": {
+    "name": "neural_w32_adam_wd0.0001",
+    "spec": {
+      "kind": "neural",
+      "width": 32,
+      "optimizer": "adam",
+      "lr": 0.003,
+      "weight_decay": 0.0001,
+      "epochs": 70
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "python": "3.12.14 | packaged by Anaconda, Inc. | (main, Aug 27 2026, 14:38:15) [Clang 20.1.8 ]",
+  "numpy": "2.5.3",
+  "sklearn": "1.9.1",
+  "torch": "2.14.0",
+  "platform": "macOS-26.6.2-arm64-arm-64bit"
+}

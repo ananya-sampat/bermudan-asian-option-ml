@@ -1,0 +1,82 @@
+[
+  {
+    "name": "asian_compare.py",
+    "sha256": "ae93bb43d4a4c6ff791f934827ae76d5ddcf03ad986fda11b4ebaa722d6007f5",
+    "unchanged": true
+  },
+  {
+    "name": "asian_lsm.py",
+    "sha256": "a368bc3355a08f86bb598b12face65d8381c574848dac77eea5bc33c297f0fc1",
+    "unchanged": true
+  },
+  {
+    "name": "asians_payoff.py",
+    "sha256": "e0aa838704557ae30eaaacee4fef798bca6811ddce578eb071d7da04e0389fc7",
+    "unchanged": true
+  },
+  {
+    "name": "binomial.py",
+    "sha256": "9c08f29bf060b376609e3d5bf35573f6d13d10ec382329f03704280b477a14ea",
+    "unchanged": true
+  },
+  {
+    "name": "black_scholes.py",
+    "sha256": "9857b274c750fd194355ad39d0b5e3b19d1083e66a3bf7b1c3c74966ffcf1068",
+    "unchanged": true
+  },
+  {
+    "name": "compare_boundry.py",
+    "sha256": "e2b829fe61a397b728445f8ac8212973db506ae294c5b901d74932fe041fa0f4",
+    "unchanged": true
+  },
+  {
+    "name": "compare_polynomial.py",
+    "sha256": "99fa8a859dee2a65acae934842fa9b4f895daad9cba5c0eb1509cb8381b33012",
+    "unchanged": true
+  },
+  {
+    "name": "compare_seeds.py",
+    "sha256": "f35baf7913fe9de161b17ab3f7ed2580c922ea904e01605898316034d8396a0c",
+    "unchanged": true
+  },
+  {
+    "name": "continuation.py",
+    "sha256": "ddb6124b576b4a4fd4545adcaeb27215466713c8011b509dd7b478d404e96a0a",
+    "unchanged": true
+  },
+  {
+    "name": "longstaff_schwartz.py",
+    "sha256": "dcbf85b62c2d85348576d659568a20b8816cb34d49f7e1bfc6e457e39da6f5a7",
+    "unchanged": true
+  },
+  {
+    "name": "lsm_tree.py",
+    "sha256": "8c76440129b700b7832c4d865ab3149cfb8233a5803e34bfe84611716cbc3f12",
+    "unchanged": true
+  },
+  {
+    "name": "monte_carlo.py",
+    "sha256": "2cc18fa54bede8f2a795d20471f1737251a57cc5172d436ac6a68a87dbd379b5",
+    "unchanged": true
+  },
+  {
+    "name": "payoffs.py",
+    "sha256": "5349f53ad779e644b58f93fb67a3996e0c38cd2a9dd51ce698d318e0a6214b8d",
+    "unchanged": true
+  },
+  {
+    "name": "plot_continuation.py",
+    "sha256": "9eddf765ddbc5af5ce0ac43c5ba5ccb6a0383e508ea0b94a1e80eaef64923343",
+    "unchanged": true
+  },
+  {
+    "name": "ridge_lsm.py",
+    "sha256": "ebaf118bef4bcdd2a8e9b34f15befd7b40c840b6a5e693b1470f99a647350058",
+    "unchanged": true
+  },
+  {
+    "name": "simulation.py",
+    "sha256": "565335c55c268e3f7ea78a10f8b6cc0a76dc6d368f5287995340a430aeb9c56e",
+    "unchanged": true
+  }
+]
