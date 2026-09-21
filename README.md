@@ -170,13 +170,7 @@ The project compares several continuation-value models.
 
 Ridge regression adds a penalty for large coefficients:
 
-$$
-\text{loss}
-=
-\text{mean squared error}
-+
-\lambda \sum_{j \ne 0} \beta_j^2.
-$$
+$$ \text{loss} = \text{mean squared error} + \lambda \sum_{j \ne 0} \beta_j^2. $$
 
 The penalty can reduce overfitting when polynomial features are highly correlated or overly flexible.
 
@@ -211,13 +205,7 @@ Each model also receives the same target: the discounted payoff from following a
 
 This makes model comparison cleaner because every model is predicting the same target. Performance is measured with mean squared error:
 
-$$
-\text{MSE}
-=
-\frac{1}{n}
-\sum_{i=1}^{n}
-(\hat y_i-y_i)^2.
-$$
+$$ \text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (\hat y_i-y_i)^2. $$
 
 Lower MSE means the model predicts the common continuation target more accurately.
 
@@ -239,12 +227,7 @@ The same test paths are used for all policy comparisons. This allows paired payo
 
 For two policies \(A\) and \(B\), the paired difference on path \(i\) is
 
-$$
-D_i =
-\text{payoff from } A
--
-\text{payoff from } B.
-$$
+$$ D_i = \text{payoff from } A - \text{payoff from } B. $$
 
 The project reports the mean of these differences and a paired 95% confidence interval.
 
