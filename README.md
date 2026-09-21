@@ -62,19 +62,11 @@ $$
 $$
 
 with
-
-$$
-\text{continuation value}
-=
-\text{estimated value of waiting}.
-$$
+$$\text{continuation value} = \text{estimated value of waiting}$$
 
 The policy exercises whenever
 
-$$
-\text{immediate payoff} >
-\text{predicted continuation value}.
-$$
+$$\text{immediate payoff} >\text{predicted continuation value}.$$
 
 This is an **optimal stopping** problem because exercising stops the contract permanently.
 
