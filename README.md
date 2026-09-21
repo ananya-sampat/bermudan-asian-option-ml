@@ -1,319 +1,337 @@
-# Learning Exercise Policies for Bermudan Asian Put Options
+# Learning Exercise Policies for Bermudan Asian Options
 
-This project studies how machine-learning models can be used to make early-exercise decisions for a **Bermudan Asian put option**.
+**Can a more sophisticated machine-learning model make better
+early-exercise decisions, or does choosing the right financial state
+matter more?**
 
-The central question is:
+This project studies that question for a Bermudan arithmetic-average
+Asian put. I built the full experiment from simulation and
+Longstaff--Schwartz regression through tree ensembles and a PyTorch
+neural network, then evaluated the resulting exercise policies on
+held-out Monte Carlo paths.
 
-> Given the option’s current state, is it better to exercise now or keep the option alive?
+The main result was not the one I initially expected: **better state
+representation mattered much more than adding model complexity.**
 
-The project uses simulated stock-price paths to train models that estimate the value of waiting. Those estimates are then converted into exercise decisions and evaluated on new, unseen paths.
+## Main result
 
-This is an option-pricing and optimal-stopping project. It is not a system for forecasting real stock prices or generating trading signals.
+A policy that saw only the running average was missing information that
+mattered for the future evolution of the option. Adding the current
+stock price increased the estimated policy value by about **\$0.59 per
+option unit**.
 
-## Contract
+  Quadratic policy input                    Estimated policy value
+  --------------------------------------- ------------------------
+  Running average only                                    \$3.3632
+  Current stock price + running average                   \$3.9531
 
-The main contract is an arithmetic-average Asian put with a one-year maturity and 50 possible exercise dates.
+The paired gain was **\$0.5899**, with a 95% confidence interval of
+**\[\$0.5739, \$0.6058\]**.
 
-A standard put option with strike \(K\) pays
+By comparison, replacing quadratic regression with more flexible models
+did not produce a reliable improvement under the tested training setup.
 
-$$
-\max(K-S_t, 0),
-$$
+![Exercise decisions at date 25](figures_ml/decision_regions.png)
 
-where \(S_t\) is the stock price when the option is exercised.
+*Sampled exercise decisions at date 25. These are outputs of the learned
+policies, not labels from a known optimal policy.*
 
-For an Asian put, the payoff depends instead on the average price observed so far:
+## What I tested
 
-$$
-A_t = \frac{S_0 + S_1 + \cdots + S_t}{t+1}.
-$$
+At each exercise date, the policy has to answer a simple-looking
+question:
 
-Exercising at date \(t\) pays
+> Is the payoff from exercising now larger than the estimated value of
+> keeping the option alive?
 
-$$
-\max(K-A_t, 0).
-$$
+The immediate exercise payoff is known. The difficult part is the
+**continuation value**, because it depends on future prices and future
+exercise decisions.
 
-The base contract uses:
+I used Longstaff--Schwartz as the basic framework and changed the model
+used to estimate continuation value:
 
-| Parameter           |  Value |
-| ------------------- | -----: |
-| Initial stock price |   $100 |
-| Strike price        |   $100 |
-| Risk-free rate      |     5% |
-| Volatility          |    20% |
-| Maturity            | 1 year |
-| Exercise dates      |     50 |
+  -----------------------------------------------------------------------
+  Model                               Why I included it
+  ----------------------------------- -----------------------------------
+  Quadratic regression                Simple Longstaff--Schwartz baseline
 
-The average includes the initial stock price. Exercise is allowed only on the 50 scheduled dates, which makes the contract Bermudan rather than fully American.
+  Cubic ridge regression              More flexible polynomial with
+                                      regularization
 
-## Why early exercise is hard
+  Random forest                       Nonlinear tree-based model
 
-At any exercise date, the immediate payoff is known. If the running average is $90 and the strike is $100, exercising pays $10.
+  Gradient boosting                   Sequential tree ensemble
 
-The difficult part is deciding whether that $10 is better than waiting.
+  Neural network                      Flexible learned nonlinear
+                                      representation
+  -----------------------------------------------------------------------
 
-Waiting may be valuable because future stock prices could lower the running average and increase the eventual payoff. Waiting also has risk: the stock price may rise, the average may rise, and any future payoff must be discounted back to today.
+All selected policies were evaluated on the same 50,000 unseen
+simulation paths so their payoffs could be compared path by path.
 
-The decision compares:
+## What happened
 
-$$\text{immediate exercise payoff}$$ with $$\text{continuation value} = \text{estimated value of waiting}$$
+Across three training seeds, quadratic and ridge regression were
+essentially tied. The neural network was close, while the selected
+forest and boosting policies were lower.
 
-The policy exercises whenever
+  Model                      Mean policy value across 3 training seeds
+  ------------------------ -------------------------------------------
+  Quadratic regression                                        \$3.9561
+  Cubic ridge regression                                      \$3.9560
+  Neural network                                              \$3.9482
+  Gradient boosting                                           \$3.9290
+  Random forest                                               \$3.9163
 
-$$\text{immediate payoff} >\text{predicted continuation value}.$$
+![Policy values across training seeds](figures_ml/policy_values.png)
 
-This is an **optimal stopping** problem because exercising stops the contract permanently.
+This does **not** establish that quadratic regression is universally
+better than the other model families. The hyperparameter search was
+deliberately limited, and the exact optimal Asian exercise policy is
+unknown. What the experiment does show is that, in this implementation,
+increasing model flexibility was much less important than giving the
+model enough information about the option's state.
 
-## Simulating stock-price paths
+That distinction became the most interesting part of the project.
 
-The project does not use historical stock data. It simulates possible stock-price paths under geometric Brownian motion, a standard model used in introductory option pricing.
+## Why spot price matters
 
-At each small time step, the price changes according to a deterministic drift term and a random shock. The simulation uses the risk-free rate as the drift because the goal is option valuation under a risk-neutral pricing model.
+For an Asian put, the immediate payoff depends on the running average
 
-A single path is one possible future:
+\[ A_t = `\frac{S_0 + S_1 + \cdots + S_t}{t+1}`{=tex}, \]
 
-| Date                | Stock price |
-| ------------------- | ----------: |
-| Today               |        $100 |
-| First exercise date |         $97 |
-| Later date          |         $91 |
-| Later date          |         $95 |
-| Expiration          |         $84 |
+and exercising pays
 
-Thousands of paths are generated for training and separate paths are generated for validation and final evaluation.
+\[ `\max`{=tex}(K-A_t,0). \]
 
-Every payoff is discounted using
+It is tempting to use only (A_t) as the model input because it
+determines today's payoff. But two paths can have the same running
+average and very different current stock prices.
 
-$$
-e^{-rt},
-$$
+For example:
 
-so a payoff received later is expressed in today’s dollars.
+  -----------------------------------------------------------------------
+      Current stock price         Running average   Immediate payoff when
+                                                                  (K=100)
+  ----------------------- ----------------------- -----------------------
+                     \$80                    \$95                     \$5
 
-## Why the current stock price and average are both inputs
+                    \$110                    \$95                     \$5
+  -----------------------------------------------------------------------
 
-The running average determines the payoff if the option is exercised today. The current stock price helps determine what may happen to the running average later.
+The immediate payoff is identical, but the states are not equivalent.
+The current stock price affects where the running average may move next,
+so it contains information about the value of waiting.
 
-For example, these two states have the same immediate payoff:
+That motivated the feature-ablation experiment comparing (A_t) with the
+fuller state ((S_t,A_t)).
 
-| Current stock price | Running average | Immediate payoff |
-| ------------------: | --------------: | ---------------: |
-|                 $80 |             $95 |               $5 |
-|                $110 |             $95 |               $5 |
+## Longstaff--Schwartz policy
 
-But they should not necessarily lead to the same decision. A low current price may keep future averages low, while a high current price may pull the average upward.
+The exercise policy is trained backward through time.
 
-The main feature experiment compares:
+1.  At expiration, each path receives its terminal payoff.
+2.  At the previous exercise date, the later discounted payoff becomes a
+    target for the value of waiting.
+3.  A model predicts continuation value from the current state.
+4.  The policy exercises when immediate payoff exceeds predicted
+    continuation value.
+5.  The procedure moves backward to the previous exercise date and
+    repeats.
 
-* an **average-only** model, using \(A_t\);
-* a **full-state** model, using both \(S_t\) and \(A_t\).
+The quadratic baseline uses normalized spot and average,
 
-This tests whether the extra state information improves the learned policy.
+\[ s=S_t/K,`\qquad `{=tex}a=A_t/K, \]
 
-## Baseline: Longstaff–Schwartz regression
+with features
 
-The main baseline is the Longstaff–Schwartz method, also called least-squares Monte Carlo.
+\[ \[1, s, a, s^2, sa, a^2\]. \]
 
-It works backward through time.
+After training, the policy is frozen and run **forward** on new paths.
+Exercise decisions use only information available at the current date.
 
-1. At expiration, every simulated path receives its final payoff.
-2. At the previous exercise date, the later discounted payoff becomes a regression target for the value of waiting.
-3. A regression model estimates continuation value using the current state.
-4. Paths where immediate exercise is better are marked as exercised at that date.
-5. The algorithm moves backward to the next earlier date and repeats the process.
+## Controlled ML comparison
 
-The baseline continuation model is quadratic regression.
+Full policy value is the quantity I ultimately care about, but it is not
+a clean supervised-learning metric because changing an exercise decision
+changes the future payoff target.
 
-For the Asian option, the full-state quadratic features are:
+To separate prediction quality from policy quality, I also built a
+fixed-target experiment at date 25. Every model receives the same state
+((S_t,A_t)) and predicts the same realized future-policy payoff
+generated by an independent quadratic teacher policy.
 
-$$
-[1,\ s,\ a,\ s^2,\ sa,\ a^2],
-$$
+  Model                 Validation MSE   Test MSE
+  ------------------- ---------------- ----------
+  Quadratic                     4.9821     4.9609
+  Ridge                         4.9804     4.9605
+  Random forest                 5.1073     5.1258
+  Gradient boosting             5.0747     5.0756
+  Neural network                4.9765     4.9705
 
-where
+![Learning curves](figures_ml/learning_curves.png)
 
-$$
-s = S_t/K,
-\qquad
-a = A_t/K.
-$$
+An important lesson from this experiment is that **prediction error and
+policy value are not the same objective**. A small continuation-value
+error near the exercise boundary can flip a decision, while a larger
+error far from the boundary may have no effect on the policy.
 
-The interaction term \(sa\) allows the influence of stock price to depend on the running average.
+## Neural-network experiment
 
-After training, the policy is evaluated forward on new paths. The evaluation code uses only the state available at the current date and the saved models. It does not use future prices to make a decision.
+The neural continuation model is a small PyTorch network with two
+inputs, two hidden layers, ReLU activations, and one continuation-value
+output.
 
-## Classical pricing checks
+I implemented:
 
-The repository also contains simpler ordinary-put experiments used to validate the financial setup.
+-   train-only feature standardization;
+-   explicit mini-batch training;
+-   validation-based early stopping;
+-   optimizer and regularization comparisons;
+-   learning curves;
+-   backward training of a separate model at each intermediate exercise
+    date.
 
-* `black_scholes.py` calculates the European option benchmark from the Black–Scholes formula.
-* `monte_carlo.py` estimates a European payoff by simulation.
-* `binomial.py` prices ordinary puts with a Cox–Ross–Rubinstein binomial tree.
-* `longstaff_schwartz.py` trains the ordinary-put Longstaff–Schwartz baseline.
+![Neural training curves](figures_ml/neural_training.png)
 
-These checks are useful because the ordinary put has established numerical references. The Asian option is harder: there is no simple closed-form “correct” early-exercise price used as a final answer.
+The network was competitive with the regression baseline, but its
+additional flexibility did not translate into a reliable policy-value
+improvement in this experiment.
 
-## Machine-learning models
+## Optimization from scratch
 
-The project compares several continuation-value models.
+I also implemented four optimizers manually for a regularized
+continuation-regression problem:
 
-| Model                  | Role in the project                                  |
-| ---------------------- | ---------------------------------------------------- |
-| Quadratic regression   | Main Longstaff–Schwartz baseline                     |
-| Cubic ridge regression | Tests a more flexible polynomial with regularization |
-| Random forest          | Tests tree-based nonlinear regression                |
-| Gradient boosting      | Tests sequential tree ensembles                      |
-| Neural network         | Tests a learned nonlinear representation             |
+-   batch gradient descent;
+-   mini-batch SGD;
+-   momentum;
+-   Nesterov accelerated gradient.
 
-### Ridge regression
+The implementations were checked against an analytic gradient and a
+closed-form ridge solution.
 
-Ridge regression adds a penalty for large coefficients:
+  Method       Final objective   Gap to closed-form optimum   Updates
+  ---------- ----------------- ---------------------------- ---------
+  GD                  2.647239                     0.108052       400
+  SGD                 2.550227                     0.011040    14,800
+  Momentum            2.542132                     0.002945    14,800
+  Nesterov            2.543284                     0.004097    14,800
 
-$$ \text{loss} = \text{mean squared error} + \lambda \sum_{j \ne 0} \beta_j^2. $$
+![Optimizer convergence](figures_ml/optimizer_convergence.png)
 
-The penalty can reduce overfitting when polynomial features are highly correlated or overly flexible.
+This part is intentionally separate from the full policy comparison. Its
+purpose is to inspect the optimization problem behind continuation-value
+regression rather than claim that one optimizer produces the best option
+policy.
 
-### Random forest and gradient boosting
+## Experimental setup
 
-Trees split the input space into regions. For example, a tree may make different continuation estimates for low-average/low-price states and low-average/high-price states.
+The base experiment uses risk-neutral geometric Brownian motion.
 
-A random forest averages many trees. Gradient boosting fits trees sequentially, with each new tree attempting to improve errors made by the earlier ones.
+  Parameter                     Value
+  -------------------------- --------
+  Initial stock price           \$100
+  Strike                        \$100
+  Risk-free rate                   5%
+  Volatility                      20%
+  Maturity                     1 year
+  Future exercise dates            50
+  Training paths per model     20,000
+  Validation paths             50,000
+  Final policy-test paths      50,000
 
-### Neural network
+The Asian average includes the initial stock price. Exercise is allowed
+only at the scheduled dates, so the contract is Bermudan rather than
+fully American.
 
-The neural model is a small PyTorch network with:
+The project uses simulated prices rather than historical market data. It
+is an option-pricing and optimal-stopping experiment, **not a
+stock-price forecasting or trading-signal system**.
 
-* two inputs: current stock price and running average;
-* two hidden layers;
-* ReLU activation functions;
-* one output: predicted continuation value.
+## Keeping the experiment honest
 
-It is trained with mini-batches and mean squared error. The model standardizes its input features using training data and uses a validation split for early stopping.
+I separated the simulation samples by purpose:
 
-## Controlled prediction experiment
+  -----------------------------------------------------------------------
+  Data                                Purpose
+  ----------------------------------- -----------------------------------
+  Training paths                      Fit model parameters
 
-The project has a fixed-target supervised-learning experiment in addition to the full early-exercise experiment.
+  Validation paths                    Choose among predefined
+                                      configurations
 
-At the midpoint of the option’s life, each model receives the same inputs:
+  Teacher-policy paths                Construct common targets for the
+                                      controlled prediction task
 
-$$
-(S_t, A_t).
-$$
+  Final test paths                    Evaluate frozen policies
+  -----------------------------------------------------------------------
 
-Each model also receives the same target: the discounted payoff from following a separately trained future exercise policy.
+The main policy comparison also uses three training seeds to check
+whether the conclusions depend heavily on one training sample.
 
-This makes model comparison cleaner because every model is predicting the same target. Performance is measured with mean squared error:
+For paired policy comparisons, the same test paths are used for both
+policies. If (P_i\^A) and (P_i\^B) are their discounted payoffs on path
+(i), I analyze
 
-$$ \text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (\hat y_i-y_i)^2. $$
+\[ D_i=P_i^A-P_i^B \]
 
-Lower MSE means the model predicts the common continuation target more accurately.
+and report a confidence interval for the mean paired difference.
 
-However, lower prediction error does not automatically produce a better exercise policy. Small errors near the exercise boundary can change an exercise decision, while larger errors far from the boundary may not matter.
+## Financial sanity checks
 
-## Full policy evaluation
+Before extending the project to the path-dependent Asian contract, I
+kept simpler ordinary-put implementations as numerical controls:
 
-Each selected model is also trained as a complete early-exercise policy.
+-   Black--Scholes European put pricing;
+-   European Monte Carlo pricing;
+-   Cox--Ross--Rubinstein binomial trees;
+-   ordinary-put Longstaff--Schwartz.
 
-For each model family:
-
-1. Simulate training paths.
-2. Fit continuation models backward through the 49 intermediate exercise dates.
-3. Freeze the learned policy.
-4. Evaluate it on 50,000 fresh test paths.
-5. Record discounted payoff, exercise time, early-exercise frequency, and runtime.
-
-The same test paths are used for all policy comparisons. This allows paired payoff differences to be calculated path by path.
-
-For two policies \(A\) and \(B\), the paired difference on path \(i\) is
-
-$$ D_i = \text{payoff from } A - \text{payoff from } B. $$
-
-The project reports the mean of these differences and a paired 95% confidence interval.
-
-## Optimization experiments
-
-The repository also implements several optimization methods from scratch for a regularized regression objective:
-
-* batch gradient descent;
-* mini-batch stochastic gradient descent;
-* momentum;
-* Nesterov accelerated gradient.
-
-The implementation includes:
-
-* the loss function;
-* its analytic gradient;
-* a closed-form ridge solution for comparison;
-* a numerical gradient check;
-* convergence plots showing objective value against updates and time.
-
-This part of the project is separate from the full option policies. Its purpose is to study how optimization methods behave when fitting the continuation-value regression problem.
-
-## Data split
-
-Different simulated paths are used for different purposes.
-
-| Dataset              | Purpose                                                 |
-| -------------------- | ------------------------------------------------------- |
-| Training paths       | Fit model parameters                                    |
-| Validation paths     | Select among predefined model configurations            |
-| Teacher-policy paths | Build common targets for the controlled prediction task |
-| Final test paths     | Evaluate the selected policies                          |
-
-This separation matters because a model should not be evaluated on data that determined its hyperparameters or architecture.
-
-The main policy results use three different training seeds, 42, 43, and 44, to show how much the learned policy changes when the training sample changes.
-
-## Results
-
-The table below reports mean policy value across three training seeds, evaluated on the same 50,000 final test paths.
-
-| Model                  | Mean discounted policy value |
-| ---------------------- | ---------------------------: |
-| Quadratic regression   |                      $3.9561 |
-| Cubic ridge regression |                      $3.9560 |
-| Neural network         |                      $3.9487 |
-| Gradient boosting      |                      $3.9258 |
-| Random forest          |                      $3.9163 |
-
-The quadratic and cubic ridge models are effectively tied. The neural network is close to the quadratic baseline, but the paired comparisons do not show a reliable improvement. The forest and boosted-tree policies are lower under the selected settings.
-
-The main result is the feature ablation:
-
-| Quadratic-policy input                | Estimated policy value |
-| ------------------------------------- | ---------------------: |
-| Running average only                  |                $3.3632 |
-| Current stock price + running average |                $3.9531 |
-
-Adding current stock price increased the policy value by about $0.59. The paired 95% confidence interval for that gain was approximately:
-
-$$
-[0.574,\ 0.606].
-$$
-
-The experiment therefore suggests that, for this problem, choosing the correct state information mattered more than replacing the quadratic model with a more complex one.
+These give familiar numerical references for checking the simulation,
+discounting, and exercise machinery before relying on the harder
+Asian-option experiment.
 
 ## Repository structure
 
-| Location                      | Purpose                                                  |
-| ----------------------------- | -------------------------------------------------------- |
-| `src/simulation.py`           | Simulates stock-price paths                              |
-| `src/asians_payoff.py`        | Computes running averages and Asian put payoffs          |
-| `src/asian_lsm.py`            | Implements the quadratic Asian Longstaff–Schwartz policy |
-| `src/continuation_dataset.py` | Builds common targets and evaluates generic policies     |
-| `src/optimizers.py`           | Implements gradient-based optimization methods           |
-| `src/ml_models.py`            | Defines ridge, forest, boosting, and neural models       |
-| `experiments/compare_ml.py`   | Runs the full study                                      |
-| `results_ml/`                 | Saved numerical outputs                                  |
-| `figures_ml/`                 | Figures generated by the experiment                      |
-| `archive/`                    | Earlier pricing benchmarks and exploratory scripts       |
+  -----------------------------------------------------------------------
+  Location                            Purpose
+  ----------------------------------- -----------------------------------
+  `src/simulation.py`                 Simulates stock-price paths
 
-## Reproducing the experiment
+  `src/asians_payoff.py`              Computes running averages and Asian
+                                      payoffs
 
-Install the dependencies in the `quant` environment:
+  `src/asian_lsm.py`                  Quadratic Asian Longstaff--Schwartz
+                                      policy
 
-```bash
+  `src/continuation_dataset.py`       Common-target dataset and generic
+                                      policy evaluation
+
+  `src/optimizers.py`                 Manual optimization algorithms
+
+  `src/ml_models.py`                  Ridge, forest, boosting, and neural
+                                      models
+
+  `experiments/compare_ml.py`         Runs the full experiment suite
+
+  `results_ml/`                       Numerical outputs
+
+  `figures_ml/`                       Generated figures
+
+  `archive/`                          Earlier pricing benchmarks and
+                                      exploratory scripts
+
+  `RESULTS.md`                        Detailed numerical results and
+                                      qualifications
+  -----------------------------------------------------------------------
+
+## Reproducing the project
+
+Create or activate the environment and install the dependencies:
+
+``` bash
 conda activate quant
 cd ~/Desktop/american-option-ml-clean
 python -m pip install -r requirements.txt
@@ -321,28 +339,36 @@ python -m pip install -r requirements.txt
 
 Run the numerical checks:
 
-```bash
+``` bash
 python run.py check
 ```
 
 Run the full experiment:
 
-```bash
+``` bash
 python run.py full
 ```
 
-The full run trains the models, performs model selection on validation paths, evaluates the final policies, and writes CSV files and figures to a timestamped folder inside `runs/`.
+A full run trains the candidate models, performs validation-based
+selection, evaluates the frozen policies, and writes CSV files and
+figures to a timestamped directory under `runs/`.
 
-Neural-network and boosting results may vary slightly across machines or package versions. The quadratic baseline, ridge comparison, feature-ablation result, and broad ranking should reproduce closely.
+Neural-network and boosting results can vary slightly across machines or
+package versions. The quadratic baseline, ridge comparison,
+feature-ablation result, and overall conclusions should reproduce
+closely.
 
 ## Limitations
 
-This is a simulation study. Its conclusions depend on:
+This is a simulation study, so the results depend on the assumed GBM
+dynamics, contract parameters, simulated sample sizes, tested
+hyperparameter grid, and training budgets.
 
-* the geometric Brownian-motion price model;
-* the contract parameters;
-* the number of simulated paths;
-* the tested hyperparameter grid;
-* the selected model architectures and training budgets.
+The exact optimal early-exercise value and decision boundary for this
+Asian option are not known here. The reported numbers are estimates of
+the values of the **learned policies**, not proof of a globally optimal
+policy and not real-market trading profits.
 
-The project does not know the exact optimal early-exercise value of the Asian option. It estimates the values of the learned policies. The reported values are simulated discounted option payoffs, not real trading profits.
+For the complete tables, seed-by-seed comparisons, robustness runs,
+controls, and statistical qualifications, see
+[`RESULTS.md`](RESULTS.md).
