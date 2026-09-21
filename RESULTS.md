@@ -324,5 +324,5 @@ Additional optimizer runs are in:
 
 optimization.csv
 
-The project-root README.md contains the conceptual
+The project-root [`README.md`](README.md)contains the conceptual
 overview, implementation map, and setup instructions.
