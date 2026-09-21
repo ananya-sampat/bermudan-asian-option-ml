@@ -112,22 +112,22 @@ The experiment suite completed in 5.85 minutes on the recorded environment. See 
 
 ## Figures
 
-![Manual optimizer convergence against the analytical objective.](../figures_ml/optimizer_convergence.png)
+![Manual optimizer convergence against the analytical objective.](bermudan-asian-option-ml/figures_ml/optimizer_convergence.png)
 
 Manual optimizer convergence against the analytical objective.
 
-![Neural training and validation curves for the predefined candidates.](../figures_ml/neural_training.png)
+![Neural training and validation curves for the predefined candidates.](bermudan-asian-option-ml/figures_ml/neural_training.png)
 
 Neural training and validation curves for the predefined candidates.
 
-![Fixed-target prediction performance versus training-data size.](../figures_ml/learning_curves.png)
+![Fixed-target prediction performance versus training-data size.](bermudan-asian-option-ml/figures_ml/learning_curves.png)
 
 Fixed-target prediction performance versus training-data size.
 
-![Full-policy values over three training seeds.](../figures_ml/policy_values.png)
+![Full-policy values over three training seeds.](bermudan-asian-option-ml/figures_ml/policy_values.png)
 
 Full-policy values over three training seeds.
 
-![Date-25 exercise decisions at sampled observed states; red = exercise, blue = wait. These are policy outputs, not optimal labels.](../figures_ml/decision_regions.png)
+![Date-25 exercise decisions at sampled observed states; red = exercise, blue = wait. These are policy outputs, not optimal labels.](bermudan-asian-option-ml/figures_ml/decision_regions.png)
 
 Date-25 exercise decisions at sampled observed states; red = exercise, blue = wait. These are policy outputs, not optimal labels.
