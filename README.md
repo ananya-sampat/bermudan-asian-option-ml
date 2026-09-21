@@ -89,15 +89,17 @@ The main result is not that the most complex model wins: a simple quadratic cont
 
 For an Asian put, the immediate payoff depends on the running average
 
-$$ 
-A_t = `\frac{S_0 + S_1 + \cdots + S_t}{t+1}`{=tex}, $
-$
+$$
+A_t = \frac{S_0 + S_1 + \cdots + S_t}{t+1},
+$$
 
 and exercising pays
 
-$$ 
-`\max`{=tex}(K-A_t,0). 
 $$
+\max(K - A_t, 0).
+$$
+
+It is tempting to use only $A_t$ as the model input because it
 
 It is tempting to use only $$A_t$$ as the model input because it
 determines today's payoff. But two paths can have the same running
@@ -137,7 +139,7 @@ The exercise policy is trained backward through time.
 The quadratic baseline uses normalized spot and average,
 
 $$ 
-s=S_t/K,`\qquad `{=tex}a=A_t/K, 
+s=S_t/K,\qquad {=tex}a=A_t/K, 
 $$
 
 with features
