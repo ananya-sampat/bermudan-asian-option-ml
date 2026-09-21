@@ -1,7 +1,7 @@
 # Learning Exercise Policies for Bermudan Asian Options
 
-**Can a more sophisticated machine-learning model make better
-early-exercise decisions, or does choosing the right financial state
+**Can a more sophisticated machine learning model make better
+early exercise decisions, or does choosing the right financial state
 matter more?**
 
 This project studies that question for a Bermudan arithmetic-average
@@ -17,24 +17,25 @@ representation mattered much more than adding model complexity.**
 
 A policy that saw only the running average was missing information that
 mattered for the future evolution of the option. Adding the current
-stock price increased the estimated policy value by about **\$0.59 per
+stock price increased the estimated policy value by about **$0.59 per
 option unit**.
 
-  Quadratic policy input                    Estimated policy value
-  --------------------------------------- ------------------------
-  Running average only                                    \$3.3632
-  Current stock price + running average                   \$3.9531
+  Quadratic policy input | Estimated policy value
+  |---|---|
+  Running average only | $3.3632
+  Current stock price + running average | $3.9531
 
-The paired gain was **\$0.5899**, with a 95% confidence interval of
-**\[\$0.5739, \$0.6058\]**.
+The paired gain was **$0.5899**, with a 95% confidence interval of
+**[$0.5739, $0.6058]**.
 
 By comparison, replacing quadratic regression with more flexible models
-did not produce a reliable improvement under the tested training setup.
+did not reliably improve under the tested training setup.
 
-![Exercise decisions at date 25](figures_ml/decision_regions.png)
+### Exercise-policy decision regions
 
-*Sampled exercise decisions at date 25. These are outputs of the learned
-policies, not labels from a known optimal policy.*
+![Exercise-policy decision regions](figures_ml/decision_regions.png)
+
+*Each point represents the state of one simulated option halfway to expiration. The x-axis is the current stock price and the y-axis is the running average price, the two variables used by the models to decide whether to exercise. Red points are states where the learned policy exercises the option; blue points are states where it waits. The boundary between the colors is therefore the model's learned exercise boundary. Despite using very different model classes, quadratic regression, gradient boosting, and the neural network learn broadly similar decision regions.*
 
 ## What I tested
 
@@ -48,18 +49,18 @@ The immediate exercise payoff is known. The difficult part is the
 **continuation value**, because it depends on future prices and future
 exercise decisions.
 
-I used Longstaff--Schwartz as the basic framework and changed the model
+I used Longstaff Schwartz as the basic framework and changed the model
 used to estimate continuation value:
 
   -----------------------------------------------------------------------
   Model                               Why I included it
   ----------------------------------- -----------------------------------
-  Quadratic regression                Simple Longstaff--Schwartz baseline
+  Quadratic regression                Simple Longstaff Schwartz baseline
 
   Cubic ridge regression              More flexible polynomial with
                                       regularization
 
-  Random forest                       Nonlinear tree-based model
+  Random forest                       Nonlinear tree based model
 
   Gradient boosting                   Sequential tree ensemble
 
