@@ -1,4 +1,4 @@
-Experimental Results
+# Experimental Results
 
 This file is the numerical record for the experiments summarized in the
 main README. The goal here is completeness rather than another project
@@ -6,7 +6,7 @@ introduction: model selection, held-out policy values, paired
 comparisons, seed sensitivity, optimization results, robustness checks,
 and numerical controls are collected below.
 
-1. Experimental protocol
+## Experimental protocol
 
 The base contract is a one-year Bermudan arithmetic-average Asian put
 simulated under risk-neutral geometric Brownian motion:
@@ -38,7 +38,7 @@ The hold-to-expiration Asian value on the final policy-test sample is
 $3.3636, with an approximate 95% interval of [$3.3174,
 $3.4098].
 
-2. Full Asian exercise policies
+## Full Asian exercise policies
 
 The first comparison uses training seed 42. Every policy is evaluated on
 the same 50,000 unseen paths, which allows pathwise paired
@@ -64,7 +64,7 @@ independently tuned to maximize final policy value.
 
 
 
-3. Training-seed sensitivity
+## Training-seed sensitivity
 
 To check whether the result was driven by one training sample, each
 model family was retrained using seeds 42, 43, and 44 and evaluated on
@@ -87,7 +87,7 @@ The broad pattern is stable across these three training samples:
 quadratic and ridge remain extremely close, the neural policy is nearby,
 and the selected tree ensembles are lower.
 
-4. Feature ablation: what information does the policy need?
+## Feature ablation: what information does the policy need?
 
 This was the largest effect in the project.
 
@@ -118,7 +118,7 @@ The figure shows policy outputs at sampled observed states. It should
 not be interpreted as comparison with a known optimal exercise boundary,
 because the optimal boundary is unavailable.
 
-5. Prediction accuracy on a common target
+## Prediction accuracy on a common target
 
 Policy value is the final quantity of interest, but comparing regressors
 inside a backward exercise algorithm is messy: changing today's exercise
@@ -155,7 +155,7 @@ automatically imply higher policy value. Errors close to the exercise
 boundary can change a stopping decision, while even larger errors far
 from the boundary may leave the decision unchanged.
 
-6. Neural-network training
+## Neural-network training
 
 The neural model uses spot and running average as inputs, two hidden
 layers with ReLU activations, and one continuation-value output.
@@ -171,7 +171,7 @@ for early stopping, while the non-neural families use all supplied
 observations. This difference should be kept in mind when comparing
 training procedures.
 
-7. Manual optimization experiment
+## Manual optimization experiment
 
 Batch GD, mini-batch SGD, momentum, and Nesterov were implemented from
 scratch for the same regularized quadratic continuation-regression
@@ -212,7 +212,7 @@ The optimizer implementations pass the analytic-gradient check and a
 well-conditioned convergence test. The continuation dataset is more
 ill-conditioned, so finite-budget objective gaps need not vanish.
 
-8. Retrained robustness checks
+## Retrained robustness checks
 
 To see whether the base result was peculiar to one contract setting, I
 froze the selected model settings and retrained the models under
@@ -237,7 +237,7 @@ the chosen workflows behave after retraining under changed contract
 parameters. They do not establish general superiority of one model
 family.
 
-9. Ordinary-put numerical control
+## Ordinary-put numerical control
 
 The repository retains a simpler ordinary-put experiment because it
 provides numerical references that are unavailable for the Asian
@@ -263,7 +263,7 @@ The tree values are numerical approximations. A Monte Carlo policy
 estimate can occasionally lie above a numerical tree reference because
 both Monte Carlo error and grid error are present.
 
-10. Statistical and experimental qualifications
+## Statistical and experimental qualifications
 
 The reported 95% intervals quantify evaluation-path uncertainty
 conditional on a trained policy. They do not capture all training
@@ -294,7 +294,7 @@ The results therefore describe this simulator, these contract settings,
 and the implemented training budgets. They are not evidence of market
 profitability.
 
-11. Reproducibility
+## Reproducibility
 
 The full experiment suite completed in 5.85 minutes on the recorded
 environment.
