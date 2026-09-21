@@ -138,8 +138,8 @@ The exercise policy is trained backward through time.
 
 The quadratic baseline uses normalized spot and average,
 
-$$ 
-s=S_t/K,\qquad {=tex}a=A_t/K, 
+$$
+s = \frac{S_t}{K}, \qquad a = \frac{A_t}{K}
 $$
 
 with features
