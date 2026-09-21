@@ -57,12 +57,7 @@ Waiting may be valuable because future stock prices could lower the running aver
 
 The decision compares:
 
-$$
-\text{immediate exercise payoff}
-$$
-
-with
-$$\text{continuation value} = \text{estimated value of waiting}$$
+$$\text{immediate exercise payoff}$$ with $$\text{continuation value} = \text{estimated value of waiting}$$
 
 The policy exercises whenever
 
