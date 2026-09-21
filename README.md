@@ -300,37 +300,19 @@ Asian-option experiment.
 
 ## Repository structure
 
-  -----------------------------------------------------------------------
-  Location                            Purpose
-  ----------------------------------- -----------------------------------
-  `src/simulation.py`                 Simulates stock-price paths
-
-  `src/asians_payoff.py`              Computes running averages and Asian
-                                      payoffs
-
-  `src/asian_lsm.py`                  Quadratic Asian Longstaff--Schwartz
-                                      policy
-
-  `src/continuation_dataset.py`       Common-target dataset and generic
-                                      policy evaluation
-
-  `src/optimizers.py`                 Manual optimization algorithms
-
-  `src/ml_models.py`                  Ridge, forest, boosting, and neural
-                                      models
-
-  `experiments/compare_ml.py`         Runs the full experiment suite
-
-  `results_ml/`                       Numerical outputs
-
-  `figures_ml/`                       Generated figures
-
-  `archive/`                          Earlier pricing benchmarks and
-                                      exploratory scripts
-
-  `RESULTS.md`                        Detailed numerical results and
-                                      qualifications
-  -----------------------------------------------------------------------
+| Location | Purpose |
+|---|---|
+| `src/simulation.py` | Simulates stock-price paths |
+| `src/asians_payoff.py` | Computes running averages and Asian payoffs |
+| `src/asian_lsm.py` | Quadratic Asian Longstaff–Schwartz policy |
+| `src/continuation_dataset.py` | Common-target dataset and generic policy evaluation |
+| `src/optimizers.py` | Manual optimization algorithms |
+| `src/ml_models.py` | Ridge, forest, boosting, and neural models |
+| `experiments/compare_ml.py` | Runs the full experiment suite |
+| `results_ml/` | Numerical outputs |
+| `figures_ml/` | Generated figures |
+| `archive/` | Earlier pricing benchmarks and exploratory scripts |
+| `RESULTS.md` | Detailed numerical results and qualifications |
 
 ## Reproducing the project
 
